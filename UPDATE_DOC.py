@@ -1,7 +1,40 @@
-import os
+import os, json
+
+
+class HandleJson:
+    # reformat data as actual json format
+    def add_link(self):
+        self.dic = {
+            # "folder_number" : f"{len(self.data)}",
+            # "folder1" : {
+            #     "folder1_url" : "",
+            #     "file_number" : "",
+            #     "file1" : "file1 url",
+            #     "file2" : "file2 url"
+            # },
+        }
+
+        for folder, file in self.data.items():
+            inner_dic = dict()
+            inner_dic["folder_url"] = "https://github.com/mursalatul/code-park/tree/master/" + folder
+            #inner_dic["file_number"] = f"{len(file)}"
+            # sort is working locally but is not working in github action. will fix it later
+            # file.sort()
+            for f in file:
+                inner_dic[f] = inner_dic["folder_url"] + f"/{f}"
+            self.dic[folder] = inner_dic
+        
+
+    def write_json(self, data):
+        self.data = data
+        self.add_link()
+        with open("DOC_DATA.json", "w") as outfile: 
+            json.dump(self.dic, outfile, indent=4)
+
 
 class CreateDocumentation:
     def writedoc(self, folder_file: dict):
+        
         with open("DOCUMENTATION.md", "w") as doc:
             doc.write("# Code Park Documentation\n\
 This documentation provides a front view of the content presented in the repository. Here, you can see the folders and the files with a tree-view structure.\n\n")
@@ -14,12 +47,13 @@ This documentation provides a front view of the content presented in the reposit
             # getting folder name and file list
             for folder, file in folder_file.items():
                 # writing folder name to doc
-                doc.write(f"- [{folder}](/{folder})\n")
+                doc.write(f"- [{folder}](https://github.com/mursalatul/code-park/tree/master/{folder})\n")
                 # sorting the files for organized view in doc
-                file.sort()
+                #file.sort()
                 # adding the file names
                 for files in file:
-                    doc.write(f"  - [{files}](/{files})\n")
+                    doc.write(f"  - [{files}](https://github.com/mursalatul/code-park/tree/master/{folder}/{files})\n")
+
 
 class Files:
     # this char will not accepted inside a class
@@ -29,12 +63,13 @@ class Files:
     
     # special cases to restrict
     # this folders will not be considered as regular folder to add in DOCUMENTATION.md
-    SPECIAL_FILES_TO_IGNORE = ["LICENSE", "venv", "virtual_env", "env", "environment"]
+    SPECIAL_FILES_TO_IGNORE = ["LICENSE", "venv", "virtual_env", "env",
+                            "environment", "ADMIN", "CONTENT", "__pycache__"]
     
     # this languages only will be accespted to commit
     LENGUAGE_EXTENTION = [".cpp", ".c", ".py", ".java"]
 
-    def get_all_valid_folder_files_dict(self):
+    def get_all_valid_folder_files_dict(self, data_location):
         # store all the data
         """
         structure:
@@ -46,7 +81,8 @@ class Files:
             .
         """
         all_files = {}
-        cwd = os.getcwd()
+        cwd = data_location
+
         for folder_name in os.listdir(cwd):
             # works only for directory
             if os.path.isdir(os.path.join(cwd, folder_name)):
@@ -95,13 +131,18 @@ class Files:
         "status" : "restricted character" if restricted character found
         """
         for character_in_name in list(name): # converting str -> to iterater
-            if character_in_name in self.RESTRICTED_CHAR:
+            if character_in_name in self.RESTRICTED_CHAR or (character_in_name >= 'A' and character_in_name <= "Z"):
                 status =  {"status" : ""}
-                # finding the restricted character and adding it in dict
-                for c in self.RESTRICTED_CHAR:
-                    if character_in_name == c:
-                        status["status"] = c
-                        return status
+                # check if any upper case letter is used.
+                if (character_in_name >= "A" and character_in_name <= "Z"):
+                    status["status"] = f"upper case letter '{character_in_name}' used."
+                else:
+                    # finding the restricted character and adding it in dict
+                    for c in self.RESTRICTED_CHAR:
+                        if character_in_name == c:
+                            status["status"] = c
+                            break
+                return status
         return {"status": "1"}
     
     def good_file_format(self, file_name: str) -> dict:
@@ -127,44 +168,25 @@ class Files:
             return {"status" : "ignore_folder"}
         else:
             return self.isgoodname(folder_name)
+        
 
 
 def main():
-    # welcome message
-    print("Preparing the repository for commit.".center(50, "*"))
-    print("\nFolder/File naming format checking . . . . . . . .")
+    # getting repository location
+    cwd = os.getcwd()
+
+    # getting file data
     ff = Files()
-    data = (ff.get_all_valid_folder_files_dict())
-    if "ERROR" in data:
-        # show relevent error message
-        # if error with the folder name
-        if data["target"] == "folder":
-            # show error message and relavent error(RESTRICTED_CHAR)
-            print(f"Wrong folder naming. \nYou have used \"", data["ERROR"], "\" in your folder name", sep="")
-            # show the folder name with error
-            print("->", data["name"])
-        # if error with file name
-        else:
-            # show error message and relavent error(RESTRICTED_CHAR)
-            print(f"Wrong file naming. \nYou have used \"", data["ERROR"], "\" in your folder name", sep="")
-            # show the file name with error
-            print("->", data["name"])
-        print("\nChecking process ended with error!")
-    else:
-        print("Checking process ended. All Folder/File names are seems good!\n")
-        doc = CreateDocumentation()
-        doc.writedoc(data)
-        print("DOCUMENTATION.md updated successful.\nYou can commit your updates now\n")
+    data = (ff.get_all_valid_folder_files_dict(cwd))
+    # print(data)
 
-        # ending message
-        print("Some key points to remember:")
-        print("* make sure you are running this program just before the commit.\n\
-* do not modify this program. this is build to reduce your effort.\n\
-* if you find any bug/suggestion feel free to submit an issue at\n\
-https://github.com/mursalatul/code-park/issues/new \n\
-* see the CONTRUBUTION.md(https://github.com/mursalatul/code-park/blob/master/CONTRIBUTE.md)\n\
-if you are confused about contributing in this project.\n")
+    # writing to Documentation.md
+    doc = CreateDocumentation()
+    doc.writedoc(data) # documentation will be written in the repo home
 
+    # updating the json file
+    mjson = HandleJson()
+    mjson.write_json(data)
+    
 if __name__ == '__main__':
     main()
-
