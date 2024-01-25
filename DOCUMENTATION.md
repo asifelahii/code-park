@@ -17,3 +17,5 @@ This documentation provides a front view of the content presented in the reposit
   - [linear_search.cpp](https://github.com/mursalatul/code-park/tree/master/search/linear_search.cpp)
 - [selection_sort](https://github.com/mursalatul/code-park/tree/master/selection_sort)
   - [selection_sort_cpp.cpp](https://github.com/mursalatul/code-park/tree/master/selection_sort/selection_sort_cpp.cpp)
+  - [selection_sort_c.c](https://github.com/mursalatul/code-park/tree/master/selection_sort/selection_sort_c.c)
+  - [selection_sort_py.py](https://github.com/mursalatul/code-park/tree/master/selection_sort/selection_sort_py.py)

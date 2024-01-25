@@ -22,7 +22,9 @@
     },
     "selection_sort": {
         "folder_url": "https://github.com/mursalatul/code-park/tree/master/selection_sort",
-        "selection_sort_cpp.cpp": "https://github.com/mursalatul/code-park/tree/master/selection_sort/selection_sort_cpp.cpp"
+        "selection_sort_cpp.cpp": "https://github.com/mursalatul/code-park/tree/master/selection_sort/selection_sort_cpp.cpp",
+        "selection_sort_c.c": "https://github.com/mursalatul/code-park/tree/master/selection_sort/selection_sort_c.c",
+        "selection_sort_py.py": "https://github.com/mursalatul/code-park/tree/master/selection_sort/selection_sort_py.py"
     },
     "hello_diu": {
         "folder_url": "https://github.com/mursalatul/code-park/tree/master/hello_diu",
